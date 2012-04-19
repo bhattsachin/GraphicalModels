@@ -60,3 +60,90 @@ class Statistics(object):
             result.append(math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2))
         
         return result
+    
+    
+    def computeNormalDistribution(self,data):
+        result = []
+        total = 0
+        for idx,val in enumerate(data):
+            total = total + math.floor(decimal.Decimal(val))
+          
+        expectation = total / len(data)  
+        deviation = 0
+         
+        #computing sd
+        for idx, val in enumerate(data):
+            deviation = deviation + math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2)
+        
+        deviation = deviation / (len(data) - 1)
+        deviation = math.sqrt(deviation)
+        
+        for val in data:
+            result.append((1/(deviation * math.sqrt( 2 * math.pi ))) * math.e**((-(float(decimal.Decimal(val))-expectation)**2)/(2*deviation**2)))
+        
+        
+        return result
+    
+    'Returns result in a bucket of 3. bucket[0] = mean-SD<-1, bucket[1] = |mean-SD| < 1 and bucket[2] = |mean-SD| > 1'
+    def computeNDBuckets(self, data):
+        result = [0,1,2,3,4]
+        #initializing 
+        result[0]=[]
+        result[1]=[]
+        result[2]=[]
+        result[3]=[]
+        result[4]=[]
+        
+        total = 0
+        for idx,val in enumerate(data):
+            total = total + math.floor(decimal.Decimal(val))
+          
+        expectation = total / len(data)  
+        deviation = 0
+        
+         
+        #computing sd
+        for val in data:
+            deviation = deviation + math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2)
+        
+        deviation = deviation / (len(data) - 1)
+        deviation = math.sqrt(deviation)
+        
+        for val in data:
+            x = decimal.Decimal(val)
+            if(x < (expectation - 2*deviation)):
+                result[0].append(val)
+            elif(x < (expectation - deviation)):
+                result[1].append(val)
+            elif(x > (expectation + 2*deviation)):
+                result[4].append(val)
+            elif(x > (expectation + deviation)):
+                result[3].append(val)
+            else:
+                result[2].append(val)    
+        
+        return result
+        
+    
+    
+    def computeNameLengthBucket(self,data):
+        result = [0,0,0]
+        average = [0,0,0]
+        count = [0,0,0]
+        
+        for idx,val in enumerate(data[:,30]):
+            x = decimal.Decimal(data[idx,2])
+            if val == 'MP':
+                result[0] = result[0] + x
+                count [0] = count[0] + 1
+            elif val == 'BP':
+                result[1] = result[1] + x
+                count[1] = count[1] + 1;
+            else:
+                result[2] = result[2] + x
+                count[2] = count[2] + 1
+                
+        for idx,val in enumerate(result):
+            average[idx] = val / count[idx]        
+        return average
+        

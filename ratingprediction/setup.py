@@ -2,6 +2,8 @@
 
 from setuptools import setup, find_packages
 import xlrd
+from pylab import *
+
 
 buildOptions = dict(
                 compressed = True,
