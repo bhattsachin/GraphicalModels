@@ -5,6 +5,7 @@ Created on Apr 15, 2012
 '''
 import math
 import decimal
+from decimal import InvalidOperation
 
 class Statistics(object):
     '''
@@ -96,21 +97,28 @@ class Statistics(object):
         
         total = 0
         for idx,val in enumerate(data):
-            total = total + math.floor(decimal.Decimal(val))
-          
+            try:
+                total = total + math.floor(decimal.Decimal(val))
+            except InvalidOperation, ex:
+                print val + " encountered when numeric expected during mean calculation"
         expectation = total / len(data)  
         deviation = 0
         
          
         #computing sd
         for val in data:
-            deviation = deviation + math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2)
-        
+            try:
+                deviation = deviation + math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2)
+            except InvalidOperation, ex:
+                print val + " encountered when numeric expected during deviation calculation"
         deviation = deviation / (len(data) - 1)
         deviation = math.sqrt(deviation)
         
         for val in data:
-            x = decimal.Decimal(val)
+            try:
+                x = decimal.Decimal(val)
+            except InvalidOperation, ex:
+                print val + " creating buckets. assigned mean value"
             if(x < (expectation - 2*deviation)):
                 result[0].append(val)
             elif(x < (expectation - deviation)):
@@ -123,6 +131,65 @@ class Statistics(object):
                 result[2].append(val)    
         
         return result
+    
+    'Returns results sliced by output buckets'
+    def computeNDBucketsWrtPrediction(self, data, mat):
+        result = [0,1,2,3,4]
+        outputBucket = []
+        outputBucket.insert(0, [0,1,2,3,4]) #low performer
+        outputBucket.insert(1, [0,1,2,3,4]) #mid performer
+        outputBucket.insert(2, [0,1,2,3,4]) #best performer
+        #initializing 
+        for i in [0,1,2]:
+            for k in [0,1,2,3,4]:
+                outputBucket[i][k] = []
+                
+        result[0]=[]
+        result[1]=[]
+        result[2]=[]
+        result[3]=[]
+        result[4]=[]
+        
+        total = 0
+        for idx,val in enumerate(data):
+            try:
+                total = total + math.floor(decimal.Decimal(val))
+            except InvalidOperation, ex:
+                print val + " encountered when numeric expected during mean calculation"
+        expectation = total / len(data)  
+        deviation = 0
+        
+         
+        #computing sd
+        for val in data:
+            try:
+                deviation = deviation + math.sqrt((math.floor(decimal.Decimal(val)) - expectation)**2)
+            except InvalidOperation, ex:
+                print val + " encountered when numeric expected during deviation calculation"
+        deviation = deviation / (len(data) - 1)
+        deviation = math.sqrt(deviation)
+        
+        for idx,val in enumerate(data):
+            
+            perf = self.performer(mat[idx])
+            
+            
+            try:
+                x = decimal.Decimal(val)
+            except InvalidOperation, ex:
+                print val + " creating buckets. assigned mean value"
+            if(x < (expectation - 2*deviation)):
+                outputBucket[perf][0].append(val)
+            elif(x < (expectation - deviation)):
+                outputBucket[perf][1].append(val)
+            elif(x > (expectation + 2*deviation)):
+                outputBucket[perf][4].append(val)
+            elif(x > (expectation + deviation)):
+                outputBucket[perf][3].append(val)
+            else:
+                outputBucket[perf][2].append(val)    
+        
+        return outputBucket
         
     
     
@@ -146,4 +213,11 @@ class Statistics(object):
         for idx,val in enumerate(result):
             average[idx] = val / count[idx]        
         return average
+    
+    def performer(self,x):
+        return {
+            'LP' : 0,
+            'MP' : 1,
+            'BP' : 2,    
+            }.get(x,1)
         
