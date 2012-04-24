@@ -120,15 +120,15 @@ class Statistics(object):
             except InvalidOperation, ex:
                 print val + " creating buckets. assigned mean value"
             if(x < (expectation - 2*deviation)):
-                result[0].append(val)
+                result[0].append(x)
             elif(x < (expectation - deviation)):
-                result[1].append(val)
+                result[1].append(x)
             elif(x > (expectation + 2*deviation)):
-                result[4].append(val)
+                result[4].append(x)
             elif(x > (expectation + deviation)):
-                result[3].append(val)
+                result[3].append(x)
             else:
-                result[2].append(val)    
+                result[2].append(x)    
         
         return result
     
