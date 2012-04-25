@@ -3,8 +3,11 @@ Created on Apr 23, 2012
 
 @author: bhatt
 '''
+from decimal import InvalidOperation
+from ratingprediction.util.graph import Graph
 from ratingprediction.util.readexcel import FileUtil
 from ratingprediction.util.statistics import Statistics
+import decimal
 import numpy
 
 
@@ -24,36 +27,51 @@ class Main(object):
         data = fileutil.readFile("../resource/dataset.xls")
         statistics = Statistics()
         mat = numpy.array(data[2:len(data)]);
-        rmat = numpy.zeros((len(mat),18))
+        rmat = numpy.zeros((len(mat),19))
         
         
         tuple = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
-        gradingCritera = []
+        gradingCritera = numpy.zeros((19,4))
         gradingTuple = [0,1,2,3] #we can fit 5 values in this range
-        for i in range(0,4):
-            gradingCritera.insert(i, tuple)
+        #for i in range(0,18):
+        #   gradingCritera.insert(i, gradingTuple)
             #for j in range(0,18):
                 #gradingCritera[i].insert(j)
       
         #fetch all the values from data
         for i in range(0,18):
             bucket = statistics.computeNDBuckets(mat[:,self.atMap(i)])
-            for j in range(0,3):
-                gradingCritera[j][i] = max(bucket[j]) 
+            for j in range(0,4):
+                gradingCritera[i][j] = max(bucket[j]) 
         
         for i in range(rmat.shape[0]):
             for j in range(rmat.shape[1]):
-                print "i:" + str(i) + " j:" + str(j)
-                if (mat[i][self.atMap(i)]>=gradingCritera[3][j]):
+                try:
+                    x = decimal.Decimal(mat[i][self.atMap(j)])
+                except InvalidOperation, ex:
+                    x = gradingCritera[j][1] # passing it average value
+                #print "i:" + str(i) + " j:" + str(j)
+                if (x>=gradingCritera[j][3]):
                     rmat[i][j] = 4
-                elif (mat[i][self.atMap(i)]>=gradingCritera[3][j]):
+                elif (x>=gradingCritera[j][2]):
                     rmat[i][j] = 3
-                elif (mat[i][self.atMap(i)]>=gradingCritera[3][j]):
+                elif (x>=gradingCritera[j][1]):
                     rmat[i][j] = 2
-                elif (mat[i][self.atMap(i)]>=gradingCritera[3][j]):
+                elif (x>=gradingCritera[j][0]):
                     rmat[i][j] = 1
                 else:
                     rmat[i][j] = 0
+                    
+        
+        for i in range(rmat.shape[0]):
+            rmat[i][18] = statistics.performer(mat[i][self.atMap(18)])   
+                         
+        for i in range(rmat.shape[0]):
+            print rmat[i]
+            
+        graph = Graph()
+        graph.plotAverage(rmat)
+        
         
         print 'x'
         

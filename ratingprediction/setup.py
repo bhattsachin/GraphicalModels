@@ -3,6 +3,7 @@
 from setuptools import setup, find_packages
 import xlrd
 from pylab import *
+from matplotlib import *
 
 
 buildOptions = dict(
